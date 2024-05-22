@@ -1,0 +1,26 @@
+{
+  "name": "@yaupon/message",
+  "version": "0.0.0-dev",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "description": "✉\uFE0F Unified interface for message passing between components with a focus on correlation metadata—this package is low-level in our ecosystem and is used by other packages.",
+  "scripts": {
+    "build": "unbuild"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@yaupon/id": "^0.0.0-dev"
+  }
+}
