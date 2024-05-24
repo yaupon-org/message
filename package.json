@@ -13,7 +13,7 @@
   "files": [
     "dist"
   ],
-  "description": "✉\uFE0F Unified interface for message passing between components with a focus on correlation metadata—this package is low-level in our ecosystem and is used by other packages.",
+  "description": "✉️ Unified interface for message passing between components with a focus on correlation metadata—this package is low-level in our ecosystem and is used by other packages.",
   "scripts": {
     "build": "unbuild"
   },
@@ -21,6 +21,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@yaupon/id": "^0.0.0-dev"
+    "@yaupon/id": "^0.0.0-dev",
+    "arktype": "2.0.0-dev.14",
+    "dataclass": "^2.1.1",
+    "deepmerge": "^4.3.1",
+    "type-fest": "^4.18.2"
   }
 }

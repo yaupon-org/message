@@ -1,7 +1,11 @@
 import { ID, id } from "@yaupon/id";
+import {MergeDeep} from "type-fest";
+import {Ark, define, Scope, Type, type as arktype,} from 'arktype'
+import deepmerge from "deepmerge";
+import {DefinitionParser, validateTypeRoot} from "arktype/out/type";
 
 // Copied from: https://github.com/keinsell/escentia/blob/d6864388a850b1a964a1dd44eb31eb099b9ead7c/src/eips/messages/message.ts#L23
-export enum MessageType {
+export enum MessageKind {
   /**
    * @see [Enterprise Integration Patterns](https://www.enterpriseintegrationpatterns.com/patterns/messaging/EventMessage.html)
    */
@@ -50,37 +54,51 @@ export interface MessageHeaders {
 
 export type CreateMessageIntent<P = unknown> = {
   id?: ID;
-  messageType: MessageType;
+  messageType: MessageKind;
   headers: MessageHeaders | null;
   payload: P;
   timestamp?: Date;
   metadata: Record<string, unknown> | null;
 };
 
-export class MessageIntent<P = unknown> {
-  readonly id!: ID;
-  readonly messageType!: MessageType;
-  readonly timestamp!: Date;
-  readonly headers!: MessageHeaders | null;
-  readonly payload!: P;
-  readonly metadata!: Record<string, unknown> | null;
+type IMessageBodySchema = Ark
 
-  constructor(constructor: CreateMessageIntent<P>) {
-    this.id = id({ type: constructor.messageType.toLowerCase() });
-    this.messageType = constructor.messageType;
-    this.timestamp = constructor.timestamp ?? new Date();
-    this.headers = constructor.headers ?? null;
-    this.payload = constructor.payload;
-    this.metadata = constructor.metadata ?? null;
-  }
+interface IMessageHeaders {
+  [key: string]: string;
+}
 
-  clone(): MessageIntent<P> {
-    return structuredClone(this);
+/**
+ * Comparing to {@link IMessageHeaders} metadata is not serialized,
+ * and it's there just to add additional information to class, this
+ * type is extendable as there may be more fields than provided
+ * by default.
+ */
+type IMessageMetadata<AdditionalData extends Record<string, any> = {}> = MergeDeep<{ id: ID, dateCreated: Date }, AdditionalData>
+
+
+class Message<Body extends Record<string, any> = {}> {
+  public id: ID
+  private type: string;
+  private kind: MessageKind;
+  private readonly schemaDefinition?: any;
+  private headers?: IMessageHeaders;
+  private metadata: IMessageMetadata;
+  public body?: Body
+  public timestamp: number = Date.now()
+
+  constructor(type: string, kind: MessageKind, schema: validateTypeRoot<Body, Ark>, headers?: IMessageHeaders, metadata?: Partial<IMessageMetadata>) {
+    this.type = type;
+    this.kind = kind;
+    this.id = id({type: kind.toLowerCase()}) as any
+    this.headers = headers;
+    this.metadata = deepmerge({id: this.id, dateCreated: new Date()} satisfies IMessageMetadata, metadata ?? {})
+
+    this.schemaDefinition = schema
   }
 }
 
-export function defineMessage<P = unknown>(
-  constructor: CreateMessageIntent<P>,
-): MessageIntent<P> {
-  return new MessageIntent(constructor);
-}
+const CreateUserCommand: Message<{username: string}> = new Message("create.user", MessageKind.COMMAND, {
+      username: "string"
+})
+
+console.log(CreateUserCommand)
